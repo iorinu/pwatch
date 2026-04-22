@@ -53,8 +53,9 @@ fn parse_lsof_line(line: &str) -> Option<(u32, String, u16)> {
     let process_name = fields[0].to_string();
     let pid: u32 = fields[1].parse().ok()?;
 
-    // NAME列は最終フィールドを使う（フィールド数が変動しても安全）
-    let name = fields.last()?;
+    // NAME列 (例: "*:8080", "127.0.0.1:3000", "[::1]:4321")
+    // macOSのlsofは末尾に "(LISTEN)" が付くことがあるためインデックス8を使う
+    let name = fields[8];
     let port_str = name.rsplit(':').next()?;
     let port: u16 = port_str.parse().ok()?;
 
