@@ -36,12 +36,6 @@ curl --proto '=https' --tlsv1.2 -LsSf https://github.com/iorinu/pwatch/releases/
 brew install iorinu/tap/pwatch
 ```
 
-### Cargo (from crates.io)
-
-```bash
-cargo install pwatch
-```
-
 ### From source
 
 ```bash
