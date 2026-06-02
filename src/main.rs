@@ -5,7 +5,8 @@ mod platform;
 mod port;
 mod tui;
 use crate::i18n::{Lang, tr};
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{Shell, generate};
 use colored::Colorize;
 use figlet_rs::FIGfont;
 
@@ -53,6 +54,11 @@ pub enum Command {
         /// Value (banner: on/off, lang: en/ja)
         value: String,
     },
+    /// Generate shell completion script (bash, zsh, fish, powershell, elvish)
+    Completion {
+        /// Target shell
+        shell: Shell,
+    },
 }
 
 fn main() {
@@ -60,9 +66,10 @@ fn main() {
     let cfg = config::load();
     i18n::init(cfg.language);
 
-    // watch モード中は画面クリアするのでバナーは出さない
+    // watch / completion はバナー抑制 (前者は画面クリア、後者はスクリプト純粋出力のため)
     let is_watch = matches!(&args.command, Command::List { watch: true, .. });
-    if cfg.show_banner && !args.json && !is_watch {
+    let is_completion = matches!(&args.command, Command::Completion { .. });
+    if cfg.show_banner && !args.json && !is_watch && !is_completion {
         let standard_font = FIGfont::standard().unwrap();
         let figure = standard_font.convert("pwatch").unwrap();
         let colors = ["red", "yellow", "green", "cyan", "blue", "magenta"];
@@ -167,6 +174,12 @@ fn main() {
                     format!("不明な設定項目: {} (使用可能: banner, lang)", key)
                 )),
             }
+        }
+        Command::Completion { shell } => {
+            // 補完スクリプトを stdout に出力。バナーは事前に抑制済み
+            let mut cmd = Cli::command();
+            let bin_name = cmd.get_name().to_string();
+            generate(shell, &mut cmd, bin_name, &mut std::io::stdout());
         }
     }
 }

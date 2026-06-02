@@ -103,6 +103,18 @@ pwatch config lang en   # 英語 (デフォルト)
 
 設定は `~/.config/pwatch/config.toml` に保存されます。
 
+### シェル補完
+
+利用中のシェル用の補完スクリプトを生成できます:
+
+```bash
+pwatch completion bash > /usr/local/etc/bash_completion.d/pwatch
+pwatch completion zsh  > ~/.zsh/completion/_pwatch     # $fpath に含めること
+pwatch completion fish > ~/.config/fish/completions/pwatch.fish
+```
+
+対応シェル: `bash`, `zsh`, `fish`, `powershell`, `elvish`。
+
 ## 対応プラットフォーム
 
 | OS | スキャン方法 |

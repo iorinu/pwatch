@@ -103,6 +103,18 @@ pwatch config lang en   # English (default)
 
 Settings are saved to `~/.config/pwatch/config.toml`.
 
+### Shell completion
+
+Generate a completion script for your shell:
+
+```bash
+pwatch completion bash > /usr/local/etc/bash_completion.d/pwatch
+pwatch completion zsh  > ~/.zsh/completion/_pwatch     # ensure dir is in $fpath
+pwatch completion fish > ~/.config/fish/completions/pwatch.fish
+```
+
+Supported shells: `bash`, `zsh`, `fish`, `powershell`, `elvish`.
+
 ## Supported Platforms
 
 | OS | Scan Method |
