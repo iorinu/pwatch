@@ -1,3 +1,4 @@
+use crate::i18n::tr;
 use crate::port::{self, PortInfo};
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -38,7 +39,7 @@ impl App {
         if self.selected >= self.ports.len() && !self.ports.is_empty() {
             self.selected = self.ports.len() - 1;
         }
-        self.message = Some("リフレッシュしました".to_string());
+        self.message = Some(tr!("Refreshed", "リフレッシュしました").to_string());
     }
 
     pub fn filtered_ports(&self) -> Vec<&PortInfo> {
@@ -78,14 +79,23 @@ impl App {
             match port::kill_process(info.pid, force) {
                 Ok(()) => {
                     let sig = if force { "SIGKILL" } else { "SIGTERM" };
-                    self.message = Some(format!(
-                        "PID {} ({}) に {} を送信しました",
-                        info.pid, info.process_name, sig
+                    self.message = Some(tr!(
+                        format!(
+                            "Sent {} to PID {} ({})",
+                            sig, info.pid, info.process_name
+                        ),
+                        format!(
+                            "PID {} ({}) に {} を送信しました",
+                            info.pid, info.process_name, sig
+                        )
                     ));
                     self.refresh();
                 }
                 Err(e) => {
-                    self.message = Some(format!("エラー: {}", e));
+                    self.message = Some(tr!(
+                        format!("Error: {}", e),
+                        format!("エラー: {}", e)
+                    ));
                 }
             }
         }

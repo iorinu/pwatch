@@ -1,10 +1,18 @@
+use crate::i18n::tr;
 use crate::port::PortInfo;
 use colored::Colorize;
 use comfy_table::{ContentArrangement, Table, presets::UTF8_FULL};
 
 pub fn print_port_list(ports: &[PortInfo]) {
     if ports.is_empty() {
-        println!("{}", "リスニング中のポートが見つかりません".yellow());
+        println!(
+            "{}",
+            tr!(
+                "No listening ports found",
+                "リスニング中のポートが見つかりません"
+            )
+            .yellow()
+        );
         return;
     }
 
@@ -37,15 +45,32 @@ pub fn print_check_result(port: u16, info: Option<&PortInfo>) {
     match info {
         Some(p) => {
             println!(
-                "ポート {} は {} (PID: {}) が使用中",
-                port.to_string().red().bold(),
-                p.process_name.cyan(),
-                p.pid.to_string().yellow()
+                "{}",
+                tr!(
+                    format!(
+                        "Port {} is used by {} (PID: {})",
+                        port.to_string().red().bold(),
+                        p.process_name.cyan(),
+                        p.pid.to_string().yellow()
+                    ),
+                    format!(
+                        "ポート {} は {} (PID: {}) が使用中",
+                        port.to_string().red().bold(),
+                        p.process_name.cyan(),
+                        p.pid.to_string().yellow()
+                    )
+                )
             );
-            println!("  コマンド: {}", p.command);
+            println!("  {} {}", tr!("Command:", "コマンド:"), p.command);
         }
         None => {
-            println!("ポート {} は{}", port.to_string().bold(), "未使用".green());
+            println!(
+                "{}",
+                tr!(
+                    format!("Port {} is {}", port.to_string().bold(), "free".green()),
+                    format!("ポート {} は{}", port.to_string().bold(), "未使用".green())
+                )
+            );
         }
     }
 }
@@ -54,12 +79,24 @@ pub fn print_kill_result(port: u16, info: &PortInfo, result: Result<(), String>,
     let sig = if force { "SIGKILL" } else { "SIGTERM" };
     match result {
         Ok(()) => println!(
-            "{} ポート {} のプロセス {} (PID: {}) に {} を送信しました",
+            "{} {}",
             "✓".green(),
-            port,
-            info.process_name.cyan(),
-            info.pid,
-            sig,
+            tr!(
+                format!(
+                    "Sent {} to process {} (PID: {}) on port {}",
+                    sig,
+                    info.process_name.cyan(),
+                    info.pid,
+                    port,
+                ),
+                format!(
+                    "ポート {} のプロセス {} (PID: {}) に {} を送信しました",
+                    port,
+                    info.process_name.cyan(),
+                    info.pid,
+                    sig,
+                )
+            )
         ),
         Err(e) => eprintln!("{} {}", "✗".red(), e),
     }

@@ -5,6 +5,7 @@ use ratatui::widgets::{Block, Borders, Clear, Paragraph, Row, Table};
 use ratatui::Frame;
 
 use super::app::{App, AppMode};
+use crate::i18n::tr;
 
 pub fn draw(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
@@ -52,7 +53,7 @@ fn draw_table(f: &mut Frame, app: &App, area: Rect) {
     let title = if app.filter.is_empty() {
         " pwatch ".to_string()
     } else {
-        format!(" pwatch [検索: {}] ", app.filter)
+        format!(" pwatch [{}: {}] ", tr!("search", "検索"), app.filter)
     };
 
     let table = Table::new(
@@ -79,9 +80,12 @@ fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let help = match &app.mode {
-        AppMode::Normal => "q:終了 j/k:移動 d:kill D:force-kill /:検索 r:更新",
-        AppMode::Search => "Enter:確定 Esc:キャンセル",
-        AppMode::Confirm { .. } => "y:実行 n:キャンセル",
+        AppMode::Normal => tr!(
+            "q:quit j/k:move d:kill D:force-kill /:search r:refresh",
+            "q:終了 j/k:移動 d:kill D:force-kill /:検索 r:更新"
+        ),
+        AppMode::Search => tr!("Enter:confirm Esc:cancel", "Enter:確定 Esc:キャンセル"),
+        AppMode::Confirm { .. } => tr!("y:yes n:cancel", "y:実行 n:キャンセル"),
     };
 
     let msg = app.message.as_deref().unwrap_or("");
@@ -110,20 +114,30 @@ fn draw_confirm_dialog(f: &mut Frame, app: &App, force: bool) {
 
     f.render_widget(Clear, dialog_area);
 
-    let sig = if force { "SIGKILL (強制)" } else { "SIGTERM" };
+    let sig = if force {
+        tr!("SIGKILL (force)", "SIGKILL (強制)")
+    } else {
+        "SIGTERM"
+    };
     let text = if let Some(info) = app.selected_port() {
-        format!(
-            "{} を PID {} ({}) に送信しますか?\n\n  y: 実行  n: キャンセル",
-            sig, info.pid, info.process_name
+        tr!(
+            format!(
+                "Send {} to PID {} ({})?\n\n  y: confirm  n: cancel",
+                sig, info.pid, info.process_name
+            ),
+            format!(
+                "{} を PID {} ({}) に送信しますか?\n\n  y: 実行  n: キャンセル",
+                sig, info.pid, info.process_name
+            )
         )
     } else {
-        "ポートが選択されていません".to_string()
+        tr!("No port selected", "ポートが選択されていません").to_string()
     };
 
     let paragraph = Paragraph::new(text).block(
         Block::default()
             .borders(Borders::ALL)
-            .title(" 確認 ")
+            .title(tr!(" Confirm ", " 確認 "))
             .border_style(Style::default().fg(Color::Red)),
     );
 

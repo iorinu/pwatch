@@ -82,6 +82,15 @@ Re-enable it:
 pwatch config banner on
 ```
 
+Switch the display language (runtime messages and TUI). The default is English:
+
+```bash
+pwatch config lang ja   # Japanese
+pwatch config lang en   # English (default)
+```
+
+> Note: `--help` output is always in English. Only runtime messages (CLI output, TUI labels) are localized.
+
 Settings are saved to `~/.config/pwatch/config.toml`.
 
 ## Supported Platforms

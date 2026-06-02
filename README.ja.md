@@ -82,6 +82,15 @@ pwatch config banner off
 pwatch config banner on
 ```
 
+表示言語を切り替える (runtime メッセージと TUI が対象)。デフォルトは英語:
+
+```bash
+pwatch config lang ja   # 日本語
+pwatch config lang en   # 英語 (デフォルト)
+```
+
+> 注意: `--help` の出力は常に英語です。CLI 出力や TUI ラベルなど runtime メッセージのみ切り替わります。
+
 設定は `~/.config/pwatch/config.toml` に保存されます。
 
 ## 対応プラットフォーム

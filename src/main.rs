@@ -1,8 +1,10 @@
 mod config;
 mod display;
+mod i18n;
 mod platform;
 mod port;
 mod tui;
+use crate::i18n::{Lang, tr};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
 use figlet_rs::FIGfont;
@@ -15,31 +17,31 @@ use figlet_rs::FIGfont;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
-    /// 出力をJSON形式にする
+    /// Output as JSON
     #[arg(long, global = true)]
     pub json: bool,
 }
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// 全リスニングポートをテーブル表示
+    /// List all listening ports in a table
     List,
-    /// 指定ポートの使用状況を確認
+    /// Check usage of a specific port
     Check { port: u16 },
-    /// 指定ポートのプロセスをキル
+    /// Kill the process bound to a port
     Kill {
         port: u16,
-        /// SIGKILLで強制キル
+        /// Force kill with SIGKILL
         #[arg(long)]
         force: bool,
     },
-    /// TUIモードを起動
+    /// Launch the TUI mode
     Ui,
-    /// 設定を変更
+    /// Update configuration
     Config {
-        /// 設定項目 (banner)
+        /// Config key (banner, lang)
         key: String,
-        /// 値 (on/off)
+        /// Value (banner: on/off, lang: en/ja)
         value: String,
     },
 }
@@ -47,13 +49,12 @@ pub enum Command {
 fn main() {
     let args = Cli::parse();
     let cfg = config::load();
+    i18n::init(cfg.language);
 
     if cfg.show_banner && !args.json {
         let standard_font = FIGfont::standard().unwrap();
         let figure = standard_font.convert("pwatch").unwrap();
-        let colors = [
-            "red", "yellow", "green", "cyan", "blue", "magenta",
-        ];
+        let colors = ["red", "yellow", "green", "cyan", "blue", "magenta"];
         for line in figure.to_string().lines() {
             for (i, ch) in line.chars().enumerate() {
                 print!("{}", ch.to_string().color(colors[i % colors.len()]));
@@ -83,7 +84,10 @@ fn main() {
             let info = match port::check(p) {
                 Some(info) => info,
                 None => {
-                    println!("ポート {} は未使用です", p);
+                    println!("{}", tr!(
+                        format!("Port {} is not in use", p),
+                        format!("ポート {} は未使用です", p)
+                    ));
                     return;
                 }
             };
@@ -96,8 +100,8 @@ fn main() {
             loop {
                 terminal
                     .draw(|f| tui::ui::draw(f, &app))
-                    .expect("描画に失敗しました");
-                tui::handler::handle_events(&mut app).expect("イベント処理に失敗しました");
+                    .expect("failed to render frame");
+                tui::handler::handle_events(&mut app).expect("failed to handle events");
                 if app.should_quit {
                     break;
                 }
@@ -110,17 +114,40 @@ fn main() {
                 "banner" => match value.as_str() {
                     "on" => {
                         cfg.show_banner = true;
-                        config::save(&cfg).expect("設定の保存に失敗しました");
-                        println!("バナー表示を有効にしました");
+                        config::save(&cfg).expect("failed to save config");
+                        println!("{}", tr!("Banner enabled", "バナー表示を有効にしました"));
                     }
                     "off" => {
                         cfg.show_banner = false;
-                        config::save(&cfg).expect("設定の保存に失敗しました");
-                        println!("バナー表示を無効にしました");
+                        config::save(&cfg).expect("failed to save config");
+                        println!("{}", tr!("Banner disabled", "バナー表示を無効にしました"));
                     }
-                    _ => eprintln!("値は on または off を指定してください"),
+                    _ => eprintln!("{}", tr!(
+                        "Value must be on or off",
+                        "値は on または off を指定してください"
+                    )),
                 },
-                _ => eprintln!("不明な設定項目: {} (使用可能: banner)", key),
+                "lang" => match Lang::parse(&value) {
+                    Some(lang) => {
+                        cfg.language = lang;
+                        config::save(&cfg).expect("failed to save config");
+                        // 保存後の言語で表示するため再初期化したいが OnceLock は再設定不可
+                        // → 直接 match して表示
+                        let msg = match lang {
+                            Lang::En => "Language set to English",
+                            Lang::Ja => "言語を日本語に設定しました",
+                        };
+                        println!("{}", msg);
+                    }
+                    None => eprintln!("{}", tr!(
+                        "Value must be en or ja",
+                        "値は en または ja を指定してください"
+                    )),
+                },
+                _ => eprintln!("{}", tr!(
+                    format!("Unknown config key: {} (available: banner, lang)", key),
+                    format!("不明な設定項目: {} (使用可能: banner, lang)", key)
+                )),
             }
         }
     }
