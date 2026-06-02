@@ -25,7 +25,14 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Command {
     /// List all listening ports in a table
-    List,
+    List {
+        /// Continuously refresh the listing
+        #[arg(short = 'w', long)]
+        watch: bool,
+        /// Refresh interval in seconds (used with --watch)
+        #[arg(long, default_value_t = 2.0, value_name = "SECONDS")]
+        interval: f64,
+    },
     /// Check usage of a specific port
     Check { port: u16 },
     /// Kill the process(es) bound to one or more ports
@@ -53,7 +60,9 @@ fn main() {
     let cfg = config::load();
     i18n::init(cfg.language);
 
-    if cfg.show_banner && !args.json {
+    // watch モード中は画面クリアするのでバナーは出さない
+    let is_watch = matches!(&args.command, Command::List { watch: true, .. });
+    if cfg.show_banner && !args.json && !is_watch {
         let standard_font = FIGfont::standard().unwrap();
         let figure = standard_font.convert("pwatch").unwrap();
         let colors = ["red", "yellow", "green", "cyan", "blue", "magenta"];
@@ -66,12 +75,16 @@ fn main() {
     }
 
     match args.command {
-        Command::List => {
-            let ports = port::scan();
-            if args.json {
-                display::print_json(&ports);
+        Command::List { watch, interval } => {
+            if watch {
+                run_watch(args.json, interval);
             } else {
-                display::print_port_list(&ports);
+                let ports = port::scan();
+                if args.json {
+                    display::print_json(&ports);
+                } else {
+                    display::print_port_list(&ports);
+                }
             }
         }
         Command::Check { port: p } => {
@@ -155,5 +168,28 @@ fn main() {
                 )),
             }
         }
+    }
+}
+
+// watch モード本体: 画面をクリアしながら一定間隔で再描画する
+fn run_watch(json: bool, interval: f64) {
+    // あまりに短い間隔は CPU を食い潰すのでガード
+    let interval = interval.max(0.1);
+    let duration = std::time::Duration::from_secs_f64(interval);
+    loop {
+        // ANSI: 画面消去 (ESC[2J) + カーソル左上へ (ESC[H)
+        print!("\x1B[2J\x1B[H");
+        let ports = port::scan();
+        if json {
+            display::print_json(&ports);
+        } else {
+            display::print_port_list(&ports);
+        }
+        let footer = tr!(
+            format!("Refreshing every {}s — Ctrl+C to exit", interval),
+            format!("更新間隔 {}秒 — Ctrl+C で終了", interval)
+        );
+        println!("\n{}", footer.dimmed());
+        std::thread::sleep(duration);
     }
 }

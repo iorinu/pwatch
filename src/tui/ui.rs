@@ -81,11 +81,18 @@ fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
 
     let help = match &app.mode {
         AppMode::Normal => tr!(
-            "q:quit j/k:move d:kill D:force-kill /:search r:refresh",
-            "q:終了 j/k:移動 d:kill D:force-kill /:検索 r:更新"
+            "q:quit j/k:move d:kill D:force-kill /:search r:refresh a:auto +/-:interval",
+            "q:終了 j/k:移動 d:kill D:force-kill /:検索 r:更新 a:自動 +/-:間隔"
         ),
         AppMode::Search => tr!("Enter:confirm Esc:cancel", "Enter:確定 Esc:キャンセル"),
         AppMode::Confirm { .. } => tr!("y:yes n:cancel", "y:実行 n:キャンセル"),
+    };
+
+    // 自動更新インジケータ
+    let auto_indicator = if app.auto_refresh {
+        format!(" AUTO {}s ", app.refresh_interval.as_secs_f64())
+    } else {
+        String::new()
     };
 
     let msg = app.message.as_deref().unwrap_or("");
@@ -94,6 +101,10 @@ fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
         Span::styled(
             format!(" {} ", mode_text),
             Style::default().bg(Color::Blue).fg(Color::White).add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(
+            auto_indicator,
+            Style::default().bg(Color::Green).fg(Color::Black).add_modifier(Modifier::BOLD),
         ),
         Span::raw(" "),
         Span::styled(help, Style::default().fg(Color::DarkGray)),

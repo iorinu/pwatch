@@ -33,6 +33,13 @@ JSON形式で出力:
 pwatch list --json
 ```
 
+`top` のように継続表示:
+
+```bash
+pwatch list --watch                # 2秒ごとに更新
+pwatch list --watch --interval 5   # 間隔を指定
+```
+
 ### 特定ポートの使用状況を確認
 
 ```bash
@@ -42,8 +49,9 @@ pwatch check 8080
 ### ポートを使用しているプロセスをキル
 
 ```bash
-pwatch kill 8080          # SIGTERM
-pwatch kill 8080 --force  # SIGKILL
+pwatch kill 8080                     # SIGTERM
+pwatch kill 8080 --force             # SIGKILL
+pwatch kill 8080 3000 5173           # 複数ポート一括キル
 ```
 
 権限エラーが出る場合:
@@ -65,7 +73,9 @@ pwatch ui
 | `d` | SIGTERM でキル (確認あり) |
 | `D` | SIGKILL でキル (確認あり) |
 | `/` | 検索モード |
-| `r` | リフレッシュ |
+| `r` | 手動リフレッシュ |
+| `a` | 自動更新のトグル |
+| `+` / `-` | 自動更新間隔を調整 (±0.5秒) |
 | `q` / `Esc` | 終了 |
 
 ### 設定

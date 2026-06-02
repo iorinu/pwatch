@@ -33,17 +33,25 @@ Output as JSON:
 pwatch list --json
 ```
 
+Continuously refresh (like `top`):
+
+```bash
+pwatch list --watch                # refresh every 2 seconds
+pwatch list --watch --interval 5   # custom interval
+```
+
 ### Check a specific port
 
 ```bash
 pwatch check 8080
 ```
 
-### Kill a process using a port
+### Kill process(es) on one or more ports
 
 ```bash
-pwatch kill 8080          # SIGTERM
-pwatch kill 8080 --force  # SIGKILL
+pwatch kill 8080                     # SIGTERM
+pwatch kill 8080 --force             # SIGKILL
+pwatch kill 8080 3000 5173           # kill multiple ports at once
 ```
 
 If you get a permission error:
@@ -65,7 +73,9 @@ pwatch ui
 | `d` | Kill with SIGTERM (with confirmation) |
 | `D` | Kill with SIGKILL (with confirmation) |
 | `/` | Search mode |
-| `r` | Refresh |
+| `r` | Manual refresh |
+| `a` | Toggle auto-refresh |
+| `+` / `-` | Adjust auto-refresh interval (±0.5s) |
 | `q` / `Esc` | Quit |
 
 ### Configuration

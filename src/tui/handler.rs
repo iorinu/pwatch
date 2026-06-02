@@ -1,23 +1,39 @@
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use std::time::Duration;
 
 use super::app::{App, AppMode};
 
 pub fn handle_events(app: &mut App) -> std::io::Result<()> {
-    if event::poll(std::time::Duration::from_millis(100))?
-        && let Event::Key(key) = event::read()? {
-            if key.kind != KeyEventKind::Press {
-                return Ok(());
-            }
+    // auto_refresh が ON のとき、次の更新タイミングまで待つ。
+    // それ以外は 100ms ごとにポーリングする (キー入力レスポンス確保)
+    let timeout = app
+        .time_until_next_refresh()
+        .map(|d| d.min(Duration::from_millis(100)))
+        .unwrap_or_else(|| Duration::from_millis(100));
 
-            match &app.mode {
-                AppMode::Normal => handle_normal(app, key.code),
-                AppMode::Search => handle_search(app, key.code),
-                AppMode::Confirm { force } => {
-                    let force = *force;
-                    handle_confirm(app, key.code, force);
-                }
+    if event::poll(timeout)?
+        && let Event::Key(key) = event::read()?
+    {
+        if key.kind != KeyEventKind::Press {
+            return Ok(());
+        }
+
+        match &app.mode {
+            AppMode::Normal => handle_normal(app, key.code),
+            AppMode::Search => handle_search(app, key.code),
+            AppMode::Confirm { force } => {
+                let force = *force;
+                handle_confirm(app, key.code, force);
             }
         }
+    }
+
+    // タイマー満了による自動更新
+    if let Some(remaining) = app.time_until_next_refresh()
+        && remaining.is_zero()
+    {
+        app.auto_refresh_tick();
+    }
     Ok(())
 }
 
@@ -42,6 +58,10 @@ fn handle_normal(app: &mut App, code: KeyCode) {
             app.mode = AppMode::Search;
         }
         KeyCode::Char('r') => app.refresh(),
+        // 自動更新のトグルと間隔調整
+        KeyCode::Char('a') => app.toggle_auto_refresh(),
+        KeyCode::Char('+') | KeyCode::Char('=') => app.change_interval(0.5),
+        KeyCode::Char('-') | KeyCode::Char('_') => app.change_interval(-0.5),
         _ => {}
     }
 }
