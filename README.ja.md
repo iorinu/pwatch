@@ -24,9 +24,34 @@
 
 ## インストール
 
+### シェルインストーラ (macOS / Linux)
+
 ```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/iorinu/pwatch/releases/latest/download/pwatch-installer.sh | sh
+```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew install iorinu/tap/pwatch
+```
+
+### Cargo (crates.io から)
+
+```bash
+cargo install pwatch
+```
+
+### ソースから
+
+```bash
+git clone https://github.com/iorinu/pwatch
+cd pwatch
 cargo install --path .
 ```
+
+各リリースの事前ビルド済みバイナリは
+[Releases ページ](https://github.com/iorinu/pwatch/releases) からもダウンロードできます。
 
 ## クイックスタート
 

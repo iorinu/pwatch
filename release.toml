@@ -1,0 +1,27 @@
+# cargo-release 設定
+# 実行例:
+#   cargo release patch --execute    # 0.1.0 -> 0.1.1
+#   cargo release minor --execute    # 0.1.0 -> 0.2.0
+#   cargo release major --execute    # 0.1.0 -> 1.0.0
+#
+# 既定では dry-run。--execute で実際に Cargo.toml 書換・タグ作成・push する
+
+# crates.io 公開は GitHub Actions (cargo-dist) に任せるので cargo-release はやらない
+publish = false
+
+# git push は手動でやる派なら false に。今は自動 push する
+push = true
+
+# タグ名のフォーマット (v0.1.0)
+tag-name = "v{{version}}"
+tag-message = "Release {{crate_name}} v{{version}}"
+
+# コミットメッセージ
+pre-release-commit-message = "chore: release v{{version}}"
+
+# CHANGELOG.md の "## [Unreleased]" を新バージョンの見出しに置換し、
+# 新しい "## [Unreleased]" セクションを上部に追加する
+pre-release-replacements = [
+    { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = "\\[Unreleased\\]: https://github.com/iorinu/pwatch/compare/v[0-9.]+\\.\\.\\.HEAD", replace = "[Unreleased]: https://github.com/iorinu/pwatch/compare/v{{version}}...HEAD\n[{{version}}]: https://github.com/iorinu/pwatch/compare/v{{prev_version}}...v{{version}}", exactly = 1 },
+]

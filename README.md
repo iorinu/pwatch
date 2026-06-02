@@ -24,9 +24,34 @@ Quickly resolve "port already in use" errors — check ports, identify processes
 
 ## Installation
 
+### Shell installer (macOS / Linux)
+
 ```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/iorinu/pwatch/releases/latest/download/pwatch-installer.sh | sh
+```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew install iorinu/tap/pwatch
+```
+
+### Cargo (from crates.io)
+
+```bash
+cargo install pwatch
+```
+
+### From source
+
+```bash
+git clone https://github.com/iorinu/pwatch
+cd pwatch
 cargo install --path .
 ```
+
+Pre-built binaries for every release are also available on the
+[Releases page](https://github.com/iorinu/pwatch/releases).
 
 ## Quickstart
 
