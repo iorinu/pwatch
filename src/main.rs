@@ -28,9 +28,11 @@ pub enum Command {
     List,
     /// Check usage of a specific port
     Check { port: u16 },
-    /// Kill the process bound to a port
+    /// Kill the process(es) bound to one or more ports
     Kill {
-        port: u16,
+        /// One or more ports (e.g. `pwatch kill 8080 3000 5173`)
+        #[arg(required = true, num_args = 1..)]
+        ports: Vec<u16>,
         /// Force kill with SIGKILL
         #[arg(long)]
         force: bool,
@@ -80,19 +82,22 @@ fn main() {
                 display::print_check_result(p, info.as_ref());
             }
         }
-        Command::Kill { port: p, force } => {
-            let info = match port::check(p) {
-                Some(info) => info,
-                None => {
-                    println!("{}", tr!(
-                        format!("Port {} is not in use", p),
-                        format!("ポート {} は未使用です", p)
-                    ));
-                    return;
-                }
-            };
-            let result = port::kill_process(info.pid, force);
-            display::print_kill_result(p, &info, result, force);
+        Command::Kill { ports, force } => {
+            // 指定されたポートを順に処理。各ポートで kill 結果をその場で出力する
+            for p in ports {
+                let info = match port::check(p) {
+                    Some(info) => info,
+                    None => {
+                        println!("{}", tr!(
+                            format!("Port {} is not in use", p),
+                            format!("ポート {} は未使用です", p)
+                        ));
+                        continue;
+                    }
+                };
+                let result = port::kill_process(info.pid, force);
+                display::print_kill_result(p, &info, result, force);
+            }
         }
         Command::Ui => {
             let mut terminal = ratatui::init();
