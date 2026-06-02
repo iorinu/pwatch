@@ -13,6 +13,7 @@ use figlet_rs::FIGfont;
 #[derive(Parser)]
 #[command(
     name = "pwatch",
+    version,
     about = "A fast, friendly port viewer and process killer"
 )]
 pub struct Cli {

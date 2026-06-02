@@ -22,6 +22,7 @@ Initial release.
   configurable `--interval`.
 - `pwatch completion <shell>` — generate shell completion scripts for
   bash, zsh, fish, powershell, and elvish.
+- `pwatch --version` / `-V` — print the version.
 - `pwatch config banner on|off` — toggle the figlet startup banner.
 - `pwatch config lang en|ja` — switch runtime messages and TUI labels
   between English and Japanese (default: English).
