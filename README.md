@@ -13,10 +13,28 @@ Quickly resolve "port already in use" errors — check ports, identify processes
 
 </div>
 
+## Features
+
+- Quickly identify which process is using any port
+- Kill processes on one or more ports in a single command
+- Live `--watch` mode and an interactive TUI with auto-refresh
+- English / Japanese UI, switchable at runtime
+- Shell completions for bash, zsh, fish, powershell, elvish
+- Single static binary with no runtime dependencies
+
 ## Installation
 
 ```bash
 cargo install --path .
+```
+
+## Quickstart
+
+```bash
+pwatch list           # what's listening on this machine?
+pwatch kill 3000      # free a stuck port
+pwatch kill 3000 5173 8080   # free several at once
+pwatch ui             # interactive viewer + killer (TUI)
 ```
 
 ## Usage
