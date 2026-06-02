@@ -2,6 +2,15 @@
 name = "pwatch"
 version = "0.1.0"
 edition = "2024"
+authors = ["iorinu"]
+description = "A fast, friendly CLI/TUI tool for viewing port usage and killing processes."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/iorinu/pwatch"
+homepage = "https://github.com/iorinu/pwatch"
+documentation = "https://github.com/iorinu/pwatch"
+keywords = ["cli", "tui", "port", "process", "lsof"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 clap = { version = "4.5.60", features = ["derive"] }

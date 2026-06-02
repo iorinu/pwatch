@@ -108,4 +108,6 @@ cargo build --release
 
 ## License
 
-MIT
+Licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 iorinu
